@@ -190,8 +190,16 @@ Use this info to welcome the student back, ask follow-up questions, or make cute
 };
 
 export const generateQuestion = async (
+  fullMessages: ChatMessage[],
   subject: string,
   gradeLevel: string,
+  levelBadge: string,
+  studentProfile: {
+    name: string;
+    age?: string;
+    subjectLevels?: Record<string, { tier: number; seal: number }>;
+    personalNotes?: string[];
+  },
   previousQuestions: string[] = []
 ): Promise<{ question: string; correctAnswer: string }> => {
   const apiKey = getApiKey();
@@ -200,6 +208,32 @@ export const generateQuestion = async (
     toast.error("API key is not set");
     throw new Error("API key is not set");
   }
+
+  const levelsText = studentProfile.subjectLevels
+    ? Object.entries(studentProfile.subjectLevels)
+        .map(([subj, lvl]) => `${subj}: ${lvl.tier}-${lvl.seal}`)
+        .join(', ')
+    : 'unknown';
+
+  const notesText = studentProfile.personalNotes && studentProfile.personalNotes.length > 0
+    ? studentProfile.personalNotes.join('; ')
+    : 'none';
+
+  const profileNote = `
+Student Info:
+- Name: ${studentProfile.name}
+- Age: ${studentProfile.age || 'unknown'}
+- Subject Levels: ${levelsText}
+- Personal Notes: ${notesText}
+
+Use this info to welcome the student back, ask follow-up questions, or make cute jokes, quips, or observations.`;
+
+  const contextMessage: ChatMessage = {
+    role: 'system',
+    content: `${systemPrompt}\n\n${profileNote}\n\n<!-- Current Subject: ${subject}, Level: ${levelBadge} -->\nThe student is in ${gradeLevel}, learning ${subject}.`
+  };
+
+  const allMessages = [contextMessage, ...fullMessages];
 
   try {
     const response = await fetch(`${baseUrl}/chat/completions`, {
@@ -210,12 +244,12 @@ export const generateQuestion = async (
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        messages: [
+        messages: allMessages.concat([
           {
             role: 'system',
-            content: `${systemPrompt}\nGenerate a fun, story-driven question in ${subject} for a ${gradeLevel} student. Embed it in a micro-adventure. Avoid repeating: ${previousQuestions.join(', ')}. Return JSON with 'question' and 'correctAnswer'.`
+            content: `Now generate a fun, story-driven question in ${subject} for a ${gradeLevel} student. Embed it in a micro-adventure. Avoid repeating: ${previousQuestions.join(', ')}. Return JSON with 'question' and 'correctAnswer'.`
           }
-        ],
+        ]),
         temperature: 0.7,
         response_format: { type: "json_object" }
       }),
