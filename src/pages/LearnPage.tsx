@@ -250,7 +250,7 @@ const LearnPage = () => {
                           disabled={isLoading || !userAnswer.trim() || !currentQuestion}
                           className="bg-edu-purple hover:bg-edu-purple/90"
                         >
-                          Check Answer
+                          {isAnswerCorrect === false ? 'Try Again' : 'Check Answer'}
                         </Button>
                       )}
                     </div>
