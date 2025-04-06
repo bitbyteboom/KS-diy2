@@ -221,81 +221,144 @@ const LearnPage = () => {
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-              <div className="lg:col-span-2">
-                <div className="bg-white rounded-xl shadow-md border p-6 mb-6">
-                  <h3 className="text-lg font-semibold mb-4">
-                    {getCurrentSubject()} - {badge}
-                  </h3>
-                  {currentQuestion ? (
-                    <div className="question-box rounded-lg p-4 mb-4">
-                      <p className="text-lg">{currentQuestion}</p>
-                    </div>
-                  ) : (
-                    <div className="question-box rounded-lg p-4 mb-4 animate-pulse">
-                      <p className="text-gray-400">Generating question...</p>
-                    </div>
-                  )}
-                  <div className="space-y-4">
-                    <Textarea
-                      placeholder="Type your answer here..."
-                      value={userAnswer}
-                      onChange={(e) => setUserAnswer(e.target.value)}
-                      className="answer-input min-h-[100px]"
-                      disabled={isLoading || !currentQuestion}
-                    />
-                    <div className="flex justify-end gap-2">
-                      {isAnswerCorrect ? (
-                        <Button
-                          onClick={handleNextQuestion}
-                          className="bg-edu-teal hover:bg-edu-teal/90"
-                        >
-                          Next Question
-                        </Button>
+            <Tabs defaultValue="quiz" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="quiz">Quest Mode</TabsTrigger>
+                <TabsTrigger value="chat">Chat with Rune</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="quiz" className="border-none p-0">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  <div className="lg:col-span-2">
+                    <div className="bg-white rounded-xl shadow-md border p-6 mb-6">
+                      <h3 className="text-lg font-semibold mb-4">
+                        {getCurrentSubject()} - {badge}
+                      </h3>
+                      {currentQuestion ? (
+                        <div className="question-box rounded-lg p-4 mb-4">
+                          <p className="text-lg">{currentQuestion}</p>
+                        </div>
                       ) : (
-                        <Button
-                          onClick={handleCheckAnswer}
-                          disabled={isLoading || !userAnswer.trim() || !currentQuestion}
-                          className="bg-edu-purple hover:bg-edu-purple/90"
-                        >
-                          {isAnswerCorrect === false ? 'Try Again' : 'Check Answer'}
-                        </Button>
+                        <div className="question-box rounded-lg p-4 mb-4 animate-pulse">
+                          <p className="text-gray-400">Generating question...</p>
+                        </div>
+                      )}
+                      <div className="space-y-4">
+                        <Textarea
+                          placeholder="Type your answer here..."
+                          value={userAnswer}
+                          onChange={(e) => setUserAnswer(e.target.value)}
+                          className="answer-input min-h-[100px]"
+                          disabled={isLoading || !currentQuestion}
+                        />
+                        <div className="flex justify-end gap-2">
+                          {isAnswerCorrect ? (
+                            <Button
+                              onClick={handleNextQuestion}
+                              className="bg-edu-teal hover:bg-edu-teal/90"
+                            >
+                              Next Question
+                            </Button>
+                          ) : (
+                            <Button
+                              onClick={handleCheckAnswer}
+                              disabled={isLoading || !userAnswer.trim() || !currentQuestion}
+                              className="bg-edu-purple hover:bg-edu-purple/90"
+                            >
+                              {isAnswerCorrect === false ? 'Try Again' : 'Check Answer'}
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="bg-white rounded-xl shadow-md border p-6 h-full">
+                      <h2 className="text-xl font-semibold mb-4">Feedback</h2>
+                      {feedback ? (
+                        <div>
+                          <div className={`feedback-box p-4 rounded-lg mb-4 ${
+                            isAnswerCorrect 
+                              ? 'text-green-800' 
+                              : 'text-orange-800'
+                          }`}>
+                            <p className="font-semibold mb-1">
+                              {isAnswerCorrect ? 'Correct! 🎉' : 'Not quite right 🤔'}
+                            </p>
+                            <p className="text-sm">{feedback}</p>
+                          </div>
+                          <Button
+                            onClick={handleNextQuestion}
+                            className="w-full bg-edu-teal hover:bg-edu-teal/90"
+                          >
+                            Next Question
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-[200px] text-gray-400 text-center">
+                          <p>Submit your answer to see feedback</p>
+                        </div>
                       )}
                     </div>
                   </div>
                 </div>
-              </div>
-              <div>
-                <div className="bg-white rounded-xl shadow-md border p-6 h-full">
-                  <h2 className="text-xl font-semibold mb-4">Feedback</h2>
-                  {feedback ? (
-                    <div>
-                      <div className={`feedback-box p-4 rounded-lg mb-4 ${
-                        isAnswerCorrect 
-                          ? 'text-green-800' 
-                          : 'text-orange-800'
-                      }`}>
-                        <p className="font-semibold mb-1">
-                          {isAnswerCorrect ? 'Correct! 🎉' : 'Not quite right 🤔'}
-                        </p>
-                        <p className="text-sm">{feedback}</p>
-                      </div>
-                      <Button
-                        onClick={handleNextQuestion}
-                        className="w-full bg-edu-teal hover:bg-edu-teal/90"
-                      >
-                        Next Question
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-[200px] text-gray-400 text-center">
-                      <p>Submit your answer to see feedback</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+              </TabsContent>
 
+              <TabsContent value="chat" className="border-none p-0">
+                <div className="bg-white rounded-xl shadow-md border flex flex-col h-[500px]">
+                  <div className="p-4 border-b">
+                    <h2 className="text-lg font-semibold">Chat with Rune</h2>
+                    <p className="text-sm text-gray-500">Ask questions, get help, or just chat!</p>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {chatMessages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center">
+                        <p>No messages yet. Start the conversation!</p>
+                      </div>
+                    ) : (
+                      chatMessages.map((msg, idx) => (
+                        <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                          <div className={`max-w-[80%] rounded-xl p-3 ${msg.role === 'user' ? 'bg-edu-purple text-white' : 'bg-gray-100'}`}>
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                    {isLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-gray-100 rounded-xl p-3">
+                          <div className="flex gap-2">
+                            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce"></div>
+                            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4 border-t flex gap-2">
+                    <Input
+                      placeholder="Type your message..."
+                      value={userMessage}
+                      onChange={(e) => setUserMessage(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSendMessage();
+                        }
+                      }}
+                    />
+                    <Button
+                      onClick={handleSendMessage}
+                      disabled={isLoading || !userMessage.trim()}
+                      className="bg-edu-teal hover:bg-edu-teal/90"
+                    >
+                      Send
+                    </Button>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         ) : (
           <div className="flex items-center justify-center h-full">
