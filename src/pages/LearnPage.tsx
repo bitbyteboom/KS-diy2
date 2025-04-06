@@ -16,9 +16,9 @@ import {
 } from '@/components/ui/select';
 import {
   generateResponse,
-  ChatMessage,
   generateQuestion,
-  checkAnswer
+  checkAnswer,
+  ChatMessage
 } from '@/services/aiService';
 import { toast } from "sonner";
 
@@ -99,6 +99,11 @@ const LearnPage = () => {
     setProfile({ ...profile, subjectLevels: levels });
   };
 
+  const badge = (() => {
+    const lvl = profile?.subjectLevels?.[getCurrentSubject()] || { tier:1, seal:1 };
+    return `${relicTiers[lvl.tier -1]} - Seal ${lvl.seal}`;
+  })();
+
   const handleSendMessage = async () => {
     if (!userMessage.trim() || isLoading) return;
     const newUserMessage: ChatMessage = { role: 'user', content: userMessage };
@@ -110,7 +115,9 @@ const LearnPage = () => {
       const assistantResponse = await generateResponse(
         [...chatMessages, newUserMessage],
         getCurrentSubject(),
-        gradeLevel
+        gradeLevel,
+        badge,
+        profile
       );
       setChatMessages(prev => [...prev, { role: 'assistant', content: assistantResponse }]);
     } catch (error) {
@@ -129,8 +136,11 @@ const LearnPage = () => {
     setIsAnswerCorrect(null);
     try {
       const { question, correctAnswer: answer } = await generateQuestion(
+        chatMessages,
         getCurrentSubject(),
         profile.gradeLevel,
+        badge,
+        profile,
         previousQuestions
       );
       setCurrentQuestion(question);
@@ -139,6 +149,7 @@ const LearnPage = () => {
       setQuestionCount(prev => prev + 1);
     } catch (error) {
       console.error('Error generating question:', error);
+      toast.error("Couldn't generate a question");
     } finally {
       setIsGeneratingQuestion(false);
     }
@@ -180,9 +191,6 @@ const LearnPage = () => {
     if (profileLoaded) handleGenerateQuestion();
   }, [profileLoaded, subjectQueue, subjectIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const currentLevel = profile?.subjectLevels?.[getCurrentSubject()] || { tier:1, seal:1 };
-  const badge = `${relicTiers[currentLevel.tier -1]} - Seal ${currentLevel.seal}`;
-
   return (
     <div className="min-h-screen flex flex-col">
       <Header />
@@ -217,7 +225,7 @@ const LearnPage = () => {
               <div className="lg:col-span-2">
                 <div className="bg-white rounded-xl shadow-md border p-6 mb-6">
                   <h3 className="text-lg font-semibold mb-4">
-                    {getCurrentSubject()} - {relicTiers[currentLevel.tier -1]} - Seal {currentLevel.seal}
+                    {getCurrentSubject()} - {badge}
                   </h3>
                   {currentQuestion ? (
                     <div className="question-box rounded-lg p-4 mb-4">
