@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/context/ProfileContext';
 import Header from '@/components/Header';
@@ -21,6 +21,7 @@ import {
   ChatMessage
 } from '@/services/aiService';
 import { toast } from "sonner";
+import { marked } from 'marked';
 
 const relicTiers = [
   "Seeker",
@@ -56,6 +57,8 @@ const LearnPage = () => {
   const [subjectIndex, setSubjectIndex] = useState<number>(0);
   const [questionCount, setQuestionCount] = useState<number>(0);
 
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (!profile) {
       navigate('/profile');
@@ -68,6 +71,12 @@ const LearnPage = () => {
       setQuestionCount(0);
     }
   }, [profile, navigate]);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [chatMessages, isLoading]);
 
   const getCurrentSubject = () => {
     if (subject !== 'All') return subject;
@@ -310,7 +319,10 @@ const LearnPage = () => {
                     <h2 className="text-lg font-semibold">Chat with Rune</h2>
                     <p className="text-sm text-gray-500">Ask questions, get help, or just chat!</p>
                   </div>
-                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                  <div
+                    ref={chatContainerRef}
+                    className="flex-1 overflow-y-auto p-4 space-y-4 prose prose-sm max-w-none"
+                  >
                     {chatMessages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center">
                         <p>No messages yet. Start the conversation!</p>
@@ -318,8 +330,16 @@ const LearnPage = () => {
                     ) : (
                       chatMessages.map((msg, idx) => (
                         <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[80%] rounded-xl p-3 ${msg.role === 'user' ? 'bg-edu-purple text-white' : 'bg-gray-100'}`}>
-                            {msg.content}
+                          <div
+                            className={`max-w-[80%] rounded-xl p-3 ${
+                              msg.role === 'user' ? 'bg-edu-purple text-white' : 'bg-gray-100'
+                            }`}
+                          >
+                            <div
+                              dangerouslySetInnerHTML={{
+                                __html: marked.parse(msg.content)
+                              }}
+                            />
                           </div>
                         </div>
                       ))
