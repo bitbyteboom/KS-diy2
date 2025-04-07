@@ -71,3 +71,25 @@ Yes it is!
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+---
+
+## Docker Deployment
+
+You can build and run this app inside a Docker container with a single command.
+
+### Build the Docker image:
+
+```bash
+docker build -t kidscholar-app .
+```
+
+### Run the Docker container:
+
+```bash
+docker run -p 3000:3000 kidscholar-app
+```
+
+Then open your browser at [http://localhost:3000](http://localhost:3000) to access the app.
+
+This will serve the production build instantly inside the container.
